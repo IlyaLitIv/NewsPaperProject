@@ -1,10 +1,23 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.db.models import Sum
 
 
 class Author(models.Model):
     authorUser = models.OneToOneField(User, on_delete=models.CASCADE)
     raitingAuthor = models.SmallIntegerField(default=0)
+
+    def update_rating(self):
+        postRat = self.post_set.all().aggregate(postRating=Sum('rating'))
+        pRat = 0
+        pRat += postRat.get('postRating')
+
+        commentRat = self.authorUser.comment_set.all().aggregate(commentRating=Sum('rating'))
+        cRat = 0
+        cRat += commentRat.get('commentRating')
+
+        self.raitingAuthor = pRat * 3 + cRat
+        self.save()
 
 
 class Category(models.Model):
@@ -36,6 +49,9 @@ class Post(models.Model):
         self.rating -= 1
         self.save()
 
+    def preview(self):
+        return self.text[0:124] + '...'
+
 
 class PostCategory(models.Model):
     postThrough = models.ForeignKey(Post, on_delete=models.CASCADE)
@@ -48,6 +64,10 @@ class Comment(models.Model):
     text = models.TextField()
     dateCreation = models.DateTimeField(auto_now_add=True)
     rating = models.SmallIntegerField(default=0)
+
+    def __str__(self):
+        return self.commentUser.username
+        # return self.commentPost.author.authorUser.username
 
     def like(self):
         self.rating += 1
