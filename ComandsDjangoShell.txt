@@ -1,37 +1,33 @@
-Что вы должны сделать в консоли Django?
-
-1	Создать двух пользователей (с помощью метода User.objects.create_user).
-2	Создать два объекта модели Author, связанные с пользователями.
-3	Добавить 4 категории в модель Category.
-4	Добавить 2 статьи и 1 новость.
-5	Присвоить им категории (как минимум в одной статье/новости должно быть не меньше 2 категорий).
-Создать как минимум 4 комментария к разным объектам модели Post (в каждом объекте должен быть как минимум один комментарий).
-Применяя функции like() и dislike() к статьям/новостям и комментариям, скорректировать рейтинги этих объектов.
-Обновить рейтинги пользователей.
-Вывести username и рейтинг лучшего пользователя (применяя сортировку и возвращая поля первого объекта).
-Вывести дату добавления, username автора, рейтинг, заголовок и превью лучшей статьи, основываясь на лайках/дислайках к этой статье.
-Вывести все комментарии (дата, пользователь, рейтинг, текст) к этой статье.
-
-
-
 from news.models import *
 1	user3 = User.objects.create(username='Iva', first_name='Ivano')
 	user4 = User.objects.create(username='Ilya', first_name='Ilyano')
-2	Author.objects.create(authorUser=user3)    //<Author: Author object (1)>
-	Author.objects.create(authorUser=user4)    //<Author: Author object (2)>
-3	>>> Category.objects.create(name='politics')
-	<Category: Category object (1)>
-	>>> Category.objects.create(name='sports')   
-	<Category: Category object (2)>
-	>>> Category.objects.create(name='economics')
-	<Category: Category object (3)>
-	>>> Category.objects.create(name='science')   
-	<Category: Category object (4)>
-4	>>> Post.objects.create(author=Author.objects.get(authorUser=User.objects.get(username='Iva')), categoryType='NW', title='one title', text='Text for one title')
-	<Post: Post object (1)>
-	>>> Post.objects.create(author=Author.objects.get(authorUser=User.objects.get(username='Iva')), categoryType='AR', title='one title AR', text='Text for one title AR')
-	<Post: Post object (2)>
-	>>> Post.objects.create(author=Author.objects.get(authorUser=User.objects.get(username='Ilya')), categoryType='AR', title='two title AR', text='Text for two title AR')
-	<Post: Post object (3)>
-
-politics sports economics science
+2	Author.objects.create(authorUser=user3)
+	Author.objects.create(authorUser=user4)
+3	Category.objects.create(name='politics')
+	Category.objects.create(name='sports')   
+	Category.objects.create(name='economics')
+	Category.objects.create(name='science')   
+4	Post.objects.create(author=Author.objects.get(authorUser=User.objects.get(username='Iva')), categoryType='NW', title='one title', text='Text for one title')
+	Post.objects.create(author=Author.objects.get(authorUser=User.objects.get(username='Iva')), categoryType='AR', title='one title AR', text='Text for one title AR')
+	Post.objects.create(author=Author.objects.get(authorUser=User.objects.get(username='Ilya')), categoryType='AR', title='two title AR', text='Text for two title AR')
+5	p1 = Post.objects.get(pk=1)
+	p2 = Post.objects.get(pk=2)
+	p3 = Post.objects.get(pk=3) 
+ 
+	p1.postCategory.add(Category.objects.get(name='politics'))
+	p2.postCategory.add(Category.objects.get(name='politics'), Category.objects.get(name='economics')) 
+	p3.postCategory.add(Category.objects.get(name='sports'))
+6	Comment.objects.create(commentUser=User.objects.get(username='Iva'), commentPost=Post.objects.get(pk=1), text='comment1')
+	Comment.objects.create(commentUser=User.objects.get(username='Ilya'), commentPost=Post.objects.get(pk=2), text='comment2') 
+	Comment.objects.create(commentUser=User.objects.get(username='Ilya'), commentPost=Post.objects.get(pk=1), text='comment3') 
+	Comment.objects.create(commentUser=User.objects.get(username='Iva'), commentPost=Post.objects.get(pk=3), text='comment4')  
+7	Post.objects.get(pk=1).like()
+	Post.objects.get(pk=2).deslike()
+	Post.objects.get(pk=3).like()
+	Comment.objects.get(pk=2).deslike()
+	Comment.objects.get(pk=2).like() 
+8	Author.objects.get(authorUser = User.objects.get(username='Iva')).update_rating() 
+	Author.objects.get(authorUser = User.objects.get(username='Ilya')).update_rating()	
+9	best = Author.objects.all().order_by('-raitingAuthor').values('authorUser', 'raitingAuthor')[0]
+10	Post.objects.all().order_by('rating').values('dateCreation', 'author', 'rating', 'title')[0]  
+11 	Comment.objects.all().values('dateCreation', 'commentUser', 'rating', 'text')
